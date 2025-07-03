@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Dossier Facile Minimal + Soutien</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; font-size: 18px; max-width: 400px; margin: auto; }
+  button { font-size: 18px; margin: 5px 0; padding: 10px; width: 100%; }
+  label { display: block; margin: 10px 0; }
+  #paypal-btn { margin-top: 30px; }
+</style>
+</head>
+<body>
+<h1>📂 Dossier Facile</h1>
+
+<div id="step0">
+  <p>Choisis le dossier :</p>
+  <button onclick="start('MDPH')">MDPH</button>
+  <button onclick="start('CPAM')">CPAM</button>
+  <button onclick="start('Ameli')">Ameli</button>
+  <button onclick="start('RQTH')">RQTH</button>
+</div>
+
+<div id="step1" style="display:none;">
+  <h2 id="choix"></h2>
+  <p>Coche les documents prêts :</p>
+  <div id="docs"></div>
+  <button id="finishBtn" disabled onclick="finish()">Terminer et Exporter PDF</button><br />
+  <button onclick="reset()">Retour</button>
+</div>
+
+<!-- Bouton PayPal soutien -->
+<div id="paypal-btn">
+  <form action="https://www.paypal.com/donate" method="post" target="_blank">
+    <!-- Remplace "TON_BOUTON_PAYPAL_ID_ICI" par ton ID PayPal hébergé -->
+    <input type="hidden" name="hosted_button_id" value="TON_BOUTON_PAYPAL_ID_ICI" />
+    <input type="submit" value="Soutenir ce projet ❤️" style="
+      font-size: 18px;
+      background-color: #0070ba;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+    " />
+  </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  const dossiers = {
+    MDPH: ["Formulaire MDPH complété", "Justificatif de domicile", "Certificat médical"],
+    CPAM: ["Formulaire CPAM", "Carte Vitale", "Relevé d'identité bancaire"],
+    Ameli: ["Inscription Ameli", "Attestation de droits"],
+    RQTH: ["Demande RQTH", "Pièce d'identité", "Certificat médical"],
+  };
+
+  let choix = '';
+  let checked = [];
+
+  function start(d) {
+    choix = d;
+    checked = Array(dossiers[d].length).fill(false);
+    document.getElementById('step0').style.display = 'none';
+    document.getElementById('step1').style.display = 'block';
+    document.getElementById('choix').textContent = d;
+    const docsDiv = document.getElementById('docs');
+    docsDiv.innerHTML = '';
+    dossiers[d].forEach((doc, i) => {
+      const label = document.createElement('label');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.onchange = () => {
+        checked[i] = checkbox.checked;
+        document.getElementById('finishBtn').disabled = checked.includes(false);
+      };
+      label.appendChild(checkbox);
+      label.appendChild(document.createTextNode(' ' + doc));
+      docsDiv.appendChild(label);
+    });
+    document.getElementById('finishBtn').disabled = true;
+  }
+
+  function finish() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text(`Résumé dossier : ${choix}`, 10, 10);
+    dossiers[choix].forEach((item, i) => {
+      doc.text(`${item} : ${checked[i] ? 'Prêt' : 'Non prêt'}`, 10, 20 + i * 10);
+    });
+    doc.save(`${choix}-dossier.pdf`);
+    alert('PDF généré !');
+    reset();
+  }
+
+  function reset() {
+    choix = '';
+    checked = [];
+    document.getElementById('step0').style.display = 'block';
+    document.getElementById('step1').style.display = 'none';
+  }
+</script>
+</body>
+</html>
