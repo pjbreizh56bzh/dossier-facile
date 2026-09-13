@@ -17,6 +17,11 @@
   .tip { font-size: 13px; color: var(--muted); margin: -6px 0 0 26px; }
   #paypal-btn { margin-top: 30px; }
   .disclaimer { font-size: 12px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-top: 16px; }
+  .official-box { background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; margin: 14px 0; }
+  .official-box b { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .03em; color: var(--accent); margin-bottom: 6px; }
+  .official-box a { display: block; font-size: 14px; color: var(--ink); margin: 4px 0; text-decoration: none; }
+  .official-box a:hover { text-decoration: underline; }
+  .official-box a::before { content: "📄 "; }
 </style>
 </head>
 <body>
@@ -33,11 +38,12 @@
 
 <div id="step1" style="display:none;">
   <h2 id="choix"></h2>
+  <div id="officialLinks"></div>
   <p>Coche les documents prêts :</p>
   <div id="docs"></div>
   <button id="finishBtn" disabled onclick="finish()">Télécharger le récapitulatif PDF</button><br />
   <button onclick="reset()">Retour</button>
-  <p class="disclaimer">Ce PDF est un récapitulatif personnel pour vous aider à préparer votre dossier — ce n'est pas un formulaire officiel de l'administration. Les formulaires Cerfa officiels restent à télécharger sur les sites concernés (mdph, ameli.fr, service-public.fr).</p>
+  <p class="disclaimer">Le PDF généré ci-dessus est un récapitulatif personnel pour vous aider à préparer votre dossier — ce n'est pas un formulaire administratif. Pour le(s) vrai(s) formulaire(s) officiel(s), utilisez les liens ci-dessus qui pointent directement vers service-public.fr / ameli.fr.</p>
 </div>
 
 <!-- Bouton PayPal soutien -->
@@ -67,6 +73,10 @@
   const dossiers = {
     MDPH: {
       intro: "Demande auprès de la Maison Départementale des Personnes Handicapées (RQTH, AAH, PCH, carte mobilité inclusion...).",
+      officialLinks: [
+        ["Cerfa 15692*01 — Formulaire de demande MDPH", "https://www.formulaires.service-public.fr/gf/cerfa_15692.do"],
+        ["Cerfa 15695*01 — Certificat médical à joindre", "https://www.formulaires.service-public.gouv.fr/gf/cerfa_15695.do"],
+      ],
       docs: [
         ["Formulaire Cerfa 15692*01 complété", "Téléchargeable sur mdphenligne.cnsa.fr ou le site de votre MDPH."],
         ["Justificatif de domicile (< 3 mois)", "Facture d'énergie, quittance de loyer, avis d'imposition."],
@@ -78,6 +88,9 @@
     },
     CPAM: {
       intro: "Démarches auprès de la Caisse Primaire d'Assurance Maladie (affiliation, remboursements, ALD...).",
+      officialLinks: [
+        ["Recherche de formulaires CPAM (ameli.fr)", "https://www.ameli.fr/assure/recherche-formulaire"],
+      ],
       docs: [
         ["Formulaire de demande (selon la démarche)", "Disponible sur ameli.fr, rubrique \"Formulaires\"."],
         ["Carte Vitale ou attestation de droits", "À jour, imprimable depuis votre compte Ameli."],
@@ -89,6 +102,10 @@
     },
     Ameli: {
       intro: "Création ou mise à jour de votre compte en ligne Ameli.",
+      officialLinks: [
+        ["Créer votre compte ameli (site officiel)", "https://www.ameli.fr/assure/adresses-et-contacts/votre-compte-ameli/creer-votre-compte-ameli"],
+        ["Se connecter à votre compte ameli", "https://assure.ameli.fr"],
+      ],
       docs: [
         ["Numéro de sécurité sociale", "13 chiffres, visible sur la carte Vitale ou une attestation."],
         ["Adresse e-mail valide", "Pour la création du compte et les notifications."],
@@ -99,6 +116,10 @@
     },
     RQTH: {
       intro: "Dossier de Reconnaissance de la Qualité de Travailleur Handicapé.",
+      officialLinks: [
+        ["Cerfa 15692*01 — Formulaire de demande MDPH", "https://www.formulaires.service-public.fr/gf/cerfa_15692.do"],
+        ["Cerfa 15695*01 — Certificat médical à joindre", "https://www.formulaires.service-public.gouv.fr/gf/cerfa_15695.do"],
+      ],
       docs: [
         ["Formulaire Cerfa 15692*01 complété", "Le même formulaire que pour toute demande MDPH."],
         ["Certificat médical Cerfa 15695*01 (< 6 mois)", "Demandez au médecin de détailler le retentissement professionnel."],
@@ -120,6 +141,17 @@
     document.getElementById('step0').style.display = 'none';
     document.getElementById('step1').style.display = 'block';
     document.getElementById('choix').textContent = d;
+
+    const linksDiv = document.getElementById('officialLinks');
+    const links = dossiers[d].officialLinks || [];
+    if (links.length) {
+      linksDiv.innerHTML = '<div class="official-box"><b>Documents officiels à télécharger</b>' +
+        links.map(([label, url]) => `<a href="${url}" target="_blank" rel="noopener">${label}</a>`).join('') +
+        '</div>';
+    } else {
+      linksDiv.innerHTML = '';
+    }
+
     const docsDiv = document.getElementById('docs');
     docsDiv.innerHTML = '';
     dossiers[d].docs.forEach(([name, tip], i) => {
@@ -216,6 +248,7 @@
   function reset() {
     choix = '';
     checked = [];
+    document.getElementById('officialLinks').innerHTML = '';
     document.getElementById('step0').style.display = 'block';
     document.getElementById('step1').style.display = 'none';
   }
