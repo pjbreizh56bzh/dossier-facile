@@ -2,45 +2,55 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
-<title>Dossier Facile Minimal + Soutien</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dossier Facile — Checklist + PDF récapitulatif</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; font-size: 18px; max-width: 400px; margin: auto; }
-  button { font-size: 18px; margin: 5px 0; padding: 10px; width: 100%; }
-  label { display: block; margin: 10px 0; }
+  :root { --accent: #0070ba; --bg: #f7f9fb; --ink: #1f2937; --muted: #6b7280; --line: #e5e7eb; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; padding: 20px; font-size: 17px; max-width: 460px; margin: auto; background: var(--bg); color: var(--ink); }
+  h1 { font-size: 1.4rem; }
+  button { font-size: 17px; margin: 6px 0; padding: 12px; width: 100%; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  #finishBtn { background: var(--accent); color: #fff; border: none; }
+  #finishBtn:disabled { background: #9ca3af; cursor: not-allowed; }
+  label { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0; line-height: 1.4; }
+  .tip { font-size: 13px; color: var(--muted); margin: -6px 0 0 26px; }
   #paypal-btn { margin-top: 30px; }
+  .disclaimer { font-size: 12px; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-top: 16px; }
 </style>
 </head>
 <body>
 <h1>📂 Dossier Facile</h1>
+<p style="color:var(--muted); margin-top:-8px;">Préparez votre dossier étape par étape et téléchargez un récapitulatif PDF personnel de ce qui est prêt.</p>
 
 <div id="step0">
   <p>Choisis le dossier :</p>
-  <button onclick="start('MDPH')">MDPH</button>
-  <button onclick="start('CPAM')">CPAM</button>
-  <button onclick="start('Ameli')">Ameli</button>
-  <button onclick="start('RQTH')">RQTH</button>
+  <button onclick="start('MDPH')">MDPH (RQTH, AAH, PCH...)</button>
+  <button onclick="start('CPAM')">CPAM (affiliation, remboursements)</button>
+  <button onclick="start('Ameli')">Compte Ameli</button>
+  <button onclick="start('RQTH')">RQTH (dossier détaillé)</button>
 </div>
 
 <div id="step1" style="display:none;">
   <h2 id="choix"></h2>
   <p>Coche les documents prêts :</p>
   <div id="docs"></div>
-  <button id="finishBtn" disabled onclick="finish()">Terminer et Exporter PDF</button><br />
+  <button id="finishBtn" disabled onclick="finish()">Télécharger le récapitulatif PDF</button><br />
   <button onclick="reset()">Retour</button>
+  <p class="disclaimer">Ce PDF est un récapitulatif personnel pour vous aider à préparer votre dossier — ce n'est pas un formulaire officiel de l'administration. Les formulaires Cerfa officiels restent à télécharger sur les sites concernés (mdph, ameli.fr, service-public.fr).</p>
 </div>
 
 <!-- Bouton PayPal soutien -->
 <div id="paypal-btn">
   <form action="https://www.paypal.com/donate" method="post" target="_blank">
-    <!-- Remplace "TON_BOUTON_PAYPAL_ID_ICI" par ton ID PayPal hébergé -->
     <input type="hidden" name="hosted_button_id" value="TCADYEAEMUJCU" />
     <input type="submit" value="Soutenir ce projet ❤️" style="
-      font-size: 18px;
+      font-size: 17px;
       background-color: #0070ba;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
+      padding: 12px 20px;
+      border-radius: 8px;
       cursor: pointer;
       width: 100%;
       margin-top: 20px;
@@ -52,13 +62,53 @@
   Un projet <a href="https://pjbreizh56bzh.github.io/ia-viral-site/">BZHandiBreizh</a>
 </p>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
 <script>
   const dossiers = {
-    MDPH: ["Formulaire MDPH complété", "Justificatif de domicile", "Certificat médical"],
-    CPAM: ["Formulaire CPAM", "Carte Vitale", "Relevé d'identité bancaire"],
-    Ameli: ["Inscription Ameli", "Attestation de droits"],
-    RQTH: ["Demande RQTH", "Pièce d'identité", "Certificat médical"],
+    MDPH: {
+      intro: "Demande auprès de la Maison Départementale des Personnes Handicapées (RQTH, AAH, PCH, carte mobilité inclusion...).",
+      docs: [
+        ["Formulaire Cerfa 15692*01 complété", "Téléchargeable sur mdphenligne.cnsa.fr ou le site de votre MDPH."],
+        ["Justificatif de domicile (< 3 mois)", "Facture d'énergie, quittance de loyer, avis d'imposition."],
+        ["Certificat médical Cerfa 15695*01", "Daté de moins de 6 mois, à faire remplir par un médecin."],
+        ["Pièce d'identité (recto/verso)", "CNI, passeport ou titre de séjour en cours de validité."],
+        ["Projet de vie rédigé", "2 à 3 pages minimum décrivant le quotidien et les besoins."],
+      ],
+      tip: "Astuce : demandez au médecin de détailler le retentissement fonctionnel de votre handicap — c'est le point le plus regardé par la CDAPH.",
+    },
+    CPAM: {
+      intro: "Démarches auprès de la Caisse Primaire d'Assurance Maladie (affiliation, remboursements, ALD...).",
+      docs: [
+        ["Formulaire de demande (selon la démarche)", "Disponible sur ameli.fr, rubrique \"Formulaires\"."],
+        ["Carte Vitale ou attestation de droits", "À jour, imprimable depuis votre compte Ameli."],
+        ["Relevé d'identité bancaire (RIB)", "Pour le versement des remboursements."],
+        ["Pièce d'identité", "CNI, passeport ou titre de séjour en cours de validité."],
+        ["Justificatifs médicaux (si ALD)", "Ordonnances, comptes-rendus, avis du médecin traitant."],
+      ],
+      tip: "Astuce : la plupart des démarches CPAM peuvent aussi se faire directement depuis votre compte Ameli, sans envoi papier.",
+    },
+    Ameli: {
+      intro: "Création ou mise à jour de votre compte en ligne Ameli.",
+      docs: [
+        ["Numéro de sécurité sociale", "13 chiffres, visible sur la carte Vitale ou une attestation."],
+        ["Adresse e-mail valide", "Pour la création du compte et les notifications."],
+        ["Pièce d'identité", "Pour la vérification d'identité si demandée."],
+        ["Attestation de droits à jour", "Téléchargeable une fois le compte activé."],
+      ],
+      tip: "Astuce : l'activation du compte Ameli se fait par code envoyé par e-mail ou courrier — comptez quelques jours si c'est un envoi postal.",
+    },
+    RQTH: {
+      intro: "Dossier de Reconnaissance de la Qualité de Travailleur Handicapé.",
+      docs: [
+        ["Formulaire Cerfa 15692*01 complété", "Le même formulaire que pour toute demande MDPH."],
+        ["Certificat médical Cerfa 15695*01 (< 6 mois)", "Demandez au médecin de détailler le retentissement professionnel."],
+        ["Pièce d'identité (recto/verso)", "CNI, passeport ou titre de séjour en cours de validité."],
+        ["Justificatif de domicile (< 3 mois)", "Facture, quittance de loyer, avis d'imposition."],
+        ["Pièces professionnelles", "Contrat de travail ou attestation France Travail, 3 derniers bulletins de salaire."],
+        ["Projet de vie détaillé (2-3 pages)", "Quotidien avec le handicap, difficultés au travail, besoins d'aménagement, objectifs."],
+      ],
+      tip: "Astuce : un certificat médical périmé (+ de 6 mois) ou un projet de vie trop court sont les deux premières causes de refus.",
+    },
   };
 
   let choix = '';
@@ -66,13 +116,13 @@
 
   function start(d) {
     choix = d;
-    checked = Array(dossiers[d].length).fill(false);
+    checked = Array(dossiers[d].docs.length).fill(false);
     document.getElementById('step0').style.display = 'none';
     document.getElementById('step1').style.display = 'block';
     document.getElementById('choix').textContent = d;
     const docsDiv = document.getElementById('docs');
     docsDiv.innerHTML = '';
-    dossiers[d].forEach((doc, i) => {
+    dossiers[d].docs.forEach(([name, tip], i) => {
       const label = document.createElement('label');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
@@ -81,21 +131,85 @@
         document.getElementById('finishBtn').disabled = checked.includes(false);
       };
       label.appendChild(checkbox);
-      label.appendChild(document.createTextNode(' ' + doc));
+      label.appendChild(document.createTextNode(' ' + name));
       docsDiv.appendChild(label);
+      const tipEl = document.createElement('p');
+      tipEl.className = 'tip';
+      tipEl.textContent = tip;
+      docsDiv.appendChild(tipEl);
     });
     document.getElementById('finishBtn').disabled = true;
   }
 
   function finish() {
+    if (typeof window.jspdf === 'undefined') {
+      alert("Erreur : la librairie de génération PDF n'a pas pu se charger. Rechargez la page et réessayez.");
+      return;
+    }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.text(`Résumé dossier : ${choix}`, 10, 10);
-    dossiers[choix].forEach((item, i) => {
-      doc.text(`${item} : ${checked[i] ? 'Prêt' : 'Non prêt'}`, 10, 20 + i * 10);
+    const accent = [0, 112, 186];
+    const margin = 14;
+    let y = 0;
+
+    // Header band
+    doc.setFillColor(...accent);
+    doc.rect(0, 0, 210, 26, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text(`Dossier ${choix} — Récapitulatif`, margin, 16);
+    doc.setFontSize(10);
+    const today = new Date().toLocaleDateString('fr-FR');
+    doc.text(`Généré le ${today} — Dossier Facile (BZHandiBreizh)`, margin, 22);
+
+    y = 36;
+    doc.setTextColor(31, 41, 55);
+    doc.setFontSize(11);
+    const introLines = doc.splitTextToSize(dossiers[choix].intro, 210 - margin * 2);
+    doc.text(introLines, margin, y);
+    y += introLines.length * 6 + 6;
+
+    doc.setDrawColor(229, 231, 235);
+    doc.line(margin, y, 210 - margin, y);
+    y += 8;
+
+    doc.setFontSize(13);
+    doc.text('Pièces du dossier', margin, y);
+    y += 8;
+
+    dossiers[choix].docs.forEach(([name, tip], i) => {
+      const ready = checked[i];
+      doc.setFillColor(...(ready ? [16, 185, 129] : [239, 68, 68]));
+      doc.circle(margin + 2, y - 1.5, 2, 'F');
+      doc.setFontSize(11);
+      doc.setTextColor(31, 41, 55);
+      const label = `${name} — ${ready ? 'Prêt' : 'À préparer'}`;
+      const nameLines = doc.splitTextToSize(label, 210 - margin * 2 - 8);
+      doc.text(nameLines, margin + 8, y);
+      y += nameLines.length * 5.5 + 1;
+      doc.setFontSize(9);
+      doc.setTextColor(107, 114, 128);
+      const tipLines = doc.splitTextToSize(tip, 210 - margin * 2 - 8);
+      doc.text(tipLines, margin + 8, y);
+      y += tipLines.length * 4.5 + 5;
+      if (y > 260) { doc.addPage(); y = 20; }
     });
-    doc.save(`${choix}-dossier.pdf`);
-    alert('PDF généré !');
+
+    y += 2;
+    doc.setDrawColor(229, 231, 235);
+    doc.line(margin, y, 210 - margin, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setTextColor(107, 114, 128);
+    const adviceLines = doc.splitTextToSize(dossiers[choix].tip, 210 - margin * 2);
+    doc.text(adviceLines, margin, y);
+    y += adviceLines.length * 5 + 10;
+
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text("Ce document est un récapitulatif personnel d'aide à la préparation — ce n'est pas un formulaire officiel de l'administration.", margin, 285);
+
+    doc.save(`${choix}-dossier-recapitulatif.pdf`);
     reset();
   }
 
